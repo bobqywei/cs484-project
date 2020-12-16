@@ -23,7 +23,7 @@ class KITTIDatasetTrain(Dataset):
                            [0, 0, 0, 1]], dtype=np.float32)
         
         with open(split, 'r') as f:
-            self.lines = [x.strip().split() for x in f.readlines() if '2011_09_26_drive_0001' in x]
+            self.lines = [x.strip().split() for x in f.readlines()]
 
     def __getitem__(self, index):
         dirname, frame, side = self.lines[index]
