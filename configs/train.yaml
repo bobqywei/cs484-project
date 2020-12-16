@@ -1,0 +1,123 @@
+exp_name: 'test'
+eval: False
+cuda: True
+num_workers: 8
+
+img_hgt: 192
+img_wid: 640
+min_depth: 0.1
+max_depth: 100.0
+num_scales: 4
+
+loss_smooth_weight: 1e-3
+
+batch_size: 12
+lr: 1e-4
+num_epochs: 20
+schedule: [15]
+
+resume: ''
+
+log_freq: 100
+save_freq: 1
+
+
+# self.parser.add_argument("--num_layers",
+#                           type=int,
+#                           help="number of resnet layers",
+#                           default=18,
+#                           choices=[18, 34, 50, 101, 152])
+# self.parser.add_argument("--dataset",
+#                           type=str,
+#                           help="dataset to train on",
+#                           default="kitti",
+#                           choices=["kitti", "kitti_odom", "kitti_depth", "kitti_test"])
+# self.parser.add_argument("--png",
+#                           help="if set, trains from raw KITTI png files (instead of jpgs)",
+#                           action="store_true")
+# self.parser.add_argument("--scales",
+#                           nargs="+",
+#                           type=int,
+#                           help="scales used in the loss",
+#                           default=[0, 1, 2, 3])
+# self.parser.add_argument("--use_stereo",
+#                           help="if set, uses stereo pair for training",
+#                           action="store_true")
+# self.parser.add_argument("--frame_ids",
+#                           nargs="+",
+#                           type=int,
+#                           help="frames to load",
+#                           default=[0, -1, 1])
+
+# # ABLATION options
+# self.parser.add_argument("--v1_multiscale",
+#                           help="if set, uses monodepth v1 multiscale",
+#                           action="store_true")
+# self.parser.add_argument("--avg_reprojection",
+#                           help="if set, uses average reprojection loss",
+#                           action="store_true")
+# self.parser.add_argument("--disable_automasking",
+#                           help="if set, doesn't do auto-masking",
+#                           action="store_true")
+# self.parser.add_argument("--predictive_mask",
+#                           help="if set, uses a predictive masking scheme as in Zhou et al",
+#                           action="store_true")
+# self.parser.add_argument("--no_ssim",
+#                           help="if set, disables ssim in the loss",
+#                           action="store_true")
+# self.parser.add_argument("--weights_init",
+#                           type=str,
+#                           help="pretrained or scratch",
+#                           default="pretrained",
+#                           choices=["pretrained", "scratch"])
+# self.parser.add_argument("--pose_model_input",
+#                           type=str,
+#                           help="how many images the pose network gets",
+#                           default="pairs",
+#                           choices=["pairs", "all"])
+# self.parser.add_argument("--pose_model_type",
+#                           type=str,
+#                           help="normal or shared",
+#                           default="separate_resnet",
+#                           choices=["posecnn", "separate_resnet", "shared"])
+
+# # EVALUATION options
+# self.parser.add_argument("--eval_stereo",
+#                           help="if set evaluates in stereo mode",
+#                           action="store_true")
+# self.parser.add_argument("--eval_mono",
+#                           help="if set evaluates in mono mode",
+#                           action="store_true")
+# self.parser.add_argument("--disable_median_scaling",
+#                           help="if set disables median scaling in evaluation",
+#                           action="store_true")
+# self.parser.add_argument("--pred_depth_scale_factor",
+#                           help="if set multiplies predictions by this number",
+#                           type=float,
+#                           default=1)
+# self.parser.add_argument("--ext_disp_to_eval",
+#                           type=str,
+#                           help="optional path to a .npy disparities file to evaluate")
+# self.parser.add_argument("--eval_split",
+#                           type=str,
+#                           default="eigen",
+#                           choices=[
+#                             "eigen", "eigen_benchmark", "benchmark", "odom_9", "odom_10"],
+#                           help="which split to run eval on")
+# self.parser.add_argument("--save_pred_disps",
+#                           help="if set saves predicted disparities",
+#                           action="store_true")
+# self.parser.add_argument("--no_eval",
+#                           help="if set disables evaluation",
+#                           action="store_true")
+# self.parser.add_argument("--eval_eigen_to_benchmark",
+#                           help="if set assume we are loading eigen results from npy but "
+#                               "we want to evaluate using the new benchmark.",
+#                           action="store_true")
+# self.parser.add_argument("--eval_out_dir",
+#                           help="if set will output the disparities to this folder",
+#                           type=str)
+# self.parser.add_argument("--post_process",
+#                           help="if set will perform the flipping post processing "
+#                               "from the original monodepth paper",
+#                           action="store_true")
