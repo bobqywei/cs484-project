@@ -20,6 +20,8 @@ def disparity_to_depth(disp, min_depth, max_depth):
     return depth
 
 
+# Implementation according to following source:
+# https://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToMatrix/index.htm
 def rotation_matrix(axisangles):
     bsize = axisangles.shape[0]
     R = torch.zeros((bsize, 4, 4), device=axisangles.device)
@@ -47,6 +49,7 @@ def rotation_matrix(axisangles):
     return R
 
 
+# Based on course notes
 def translation_matrix(translation):
     bsize = translation.shape[0]
     T = torch.zeros((bsize, 4, 4), device=translation.shape)

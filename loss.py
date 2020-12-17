@@ -25,8 +25,8 @@ class BaseLoss(object):
         self.SSIMLoss = SSIM()
 
     def elemwise_reprojection_loss(self, pred, target):
-        l1_loss = torch.abs(pred - target).mean(dim=1)
-        ssim_loss = self.SSIMLoss(pred, target).mean(dim=1)
+        l1_loss = torch.abs(pred - target).mean(dim=1, keepdim=True)
+        ssim_loss = self.SSIMLoss(pred, target).mean(dim=1, keepdim=True)
         return ssim_loss*0.85 + l1_loss*0.15
 
     # t_img, tPrime_img: [B,3,H,W]
@@ -43,7 +43,7 @@ class BaseLoss(object):
 
         depth_preds = disparity_to_depth(disparity_preds, self.config['min_depth'], self.config['max_depth'])
 
-        total_proj_loss = 0
+        proj_loss_across_scales = []
 
         for i in range(self.config['num_scales']):
             depth = depth_preds[i]
@@ -78,16 +78,18 @@ class BaseLoss(object):
             pred_tPrime_img = F.grid_sample(t_img, tPrime_coords, padding_mode="border")
 
             # compute the reprojection loss
-            reproj_loss = self.elemwise_reprojection_loss(pred_tPrime_img, tPrime_img)
+            reproj_loss = self.elemwise_reprojection_loss(pred_tPrime_img, tPrime_img) # [B,1,H,W]
             # use automasking for removing stationary pixels from loss
+            # takes the minimum between reproj loss and unwarped loss at each pixel
             if self.config['use_mask']:
                 unwarped_loss = self.elemwise_reprojection_loss(t_img, tPrime_img)
-                keep_mask = (reproj_loss < unwarped_loss)
-                reproj_loss = reproj_loss[keep_mask]
+                reproj_loss = torch.cat([reproj_loss, unwarped_loss], dim=1).min(dim=1, keepdim=True)
             
-            total_proj_loss += reproj_loss.mean()
+            proj_loss_across_scales.append(reproj_loss)
 
-        return total_proj_loss / self.config['num_scales']
+        # mean across scales, final shape of [B,H,W]
+        proj_loss = torch.cat(proj_loss_across_scales, dim=1).mean(dim=1)
+        return proj_loss
 
 
     # disp_imgs (for t): 4 x [B,scaleH,scaleW]

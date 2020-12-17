@@ -7,8 +7,8 @@ img_hgt: 192
 img_wid: 640
 min_depth: 0.1
 max_depth: 100.0
-num_scales: 4
 
+num_scales: 4
 use_mask: False
 smooth_weight: 1e-3
 

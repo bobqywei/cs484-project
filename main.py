@@ -17,5 +17,3 @@ if __name__ == '__main__':
     # val_dataset = KITTIDatasetTrain('data/val.txt', config)
     # val_dataloader = DataLoader(val_dataset, batch_size=config['batch_size'], shuffle=True, num_workers=config['num_workers'])
     
-    for _, data in enumerate(train_dataloader):
-        import ipdb; ipdb.set_trace()
