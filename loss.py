@@ -24,7 +24,7 @@ class BaseLoss(object):
 
         self.SSIMLoss = SSIM()
 
-    def elemwise_reprojection_loss(self, pred, target):
+    def _elemwise_reprojection_loss(self, pred, target):
         l1_loss = torch.abs(pred - target).mean(dim=1, keepdim=True)
         ssim_loss = self.SSIMLoss(pred, target).mean(dim=1, keepdim=True)
         return ssim_loss*0.85 + l1_loss*0.15
@@ -87,8 +87,8 @@ class BaseLoss(object):
             
             proj_loss_across_scales.append(reproj_loss)
 
-        # mean across scales, final shape of [B,H,W]
-        proj_loss = torch.cat(proj_loss_across_scales, dim=1).mean(dim=1)
+        # mean across scales, final shape of [B,1,H,W]
+        proj_loss = torch.cat(proj_loss_across_scales, dim=1).mean(dim=1, keepdim=True)
         return proj_loss
 
 

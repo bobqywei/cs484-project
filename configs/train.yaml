@@ -10,6 +10,7 @@ max_depth: 100.0
 
 num_scales: 4
 use_mask: False
+min_proj: True
 smooth_weight: 1e-3
 
 batch_size: 12
@@ -20,7 +21,6 @@ schedule: [15]
 resume: ''
 
 log_freq: 100
-save_freq: 1
 
 
 # self.parser.add_argument("--num_layers",
