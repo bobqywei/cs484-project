@@ -101,7 +101,7 @@ class BaseLoss(object):
 
         total_smooth_loss = 0
         for scale in range(self.config['num_scales']):
-            disp_img = disp_imgs[scale]
+            disp_img = disp_imgs[self.config['num_scales']-1-scale]
             if scale > 0:
                 disp_img = F.interpolate(
                     disp_img, (self.H, self.W), mode="bilinear", align_corners=False)
