@@ -38,7 +38,7 @@ def get_losses_over_frames(posenet, data, disparity_imgs, config):
 
     # take minimum reprojection loss across frames
     if config['min_proj']:
-        reproj_loss_all_frames = torch.cat(reproj_loss_all_frames, dim=1).min(dim=1)
+        reproj_loss_all_frames, _ = torch.cat(reproj_loss_all_frames, dim=1).min(dim=1)
     else:
         reproj_loss_all_frames = torch.cat(reproj_loss_all_frames, dim=1).mean(dim=1)
     reproj_loss_all_frames = reproj_loss_all_frames.mean()
