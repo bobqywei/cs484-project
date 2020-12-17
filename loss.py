@@ -41,16 +41,14 @@ class BaseLoss(object):
         T = translation_matrix(pose_preds[:,3:])
         P = torch.matmul(R.transpose(1,2), T*-1) if invert else torch.matmul(T, R) # [B,4,4]
 
-        depth_preds = disparity_to_depth(disparity_preds, self.config['min_depth'], self.config['max_depth'])
-
         proj_loss_across_scales = []
 
         for i in range(self.config['num_scales']):
-            depth = depth_preds[i]
+            depth = disparity_to_depth(
+                disparity_preds[self.config['num_scales']-1-i], self.config['min_depth'], self.config['max_depth'])
             # Upsample all depth maps to original [B,H,W]
             if i > 0:
-                depth = F.interpolate(
-                    depth, (self.H, self.W), mode="bilinear", align_corners=False)
+                depth = F.interpolate(depth, (self.H, self.W), mode="bilinear", align_corners=False)
 
             K = Ks[i]
             invK = invKs[i]
@@ -78,11 +76,11 @@ class BaseLoss(object):
             pred_tPrime_img = F.grid_sample(t_img, tPrime_coords, padding_mode="border")
 
             # compute the reprojection loss
-            reproj_loss = self.elemwise_reprojection_loss(pred_tPrime_img, tPrime_img) # [B,1,H,W]
+            reproj_loss = self._elemwise_reprojection_loss(pred_tPrime_img, tPrime_img) # [B,1,H,W]
             # use automasking for removing stationary pixels from loss
             # takes the minimum between reproj loss and unwarped loss at each pixel
             if self.config['use_mask']:
-                unwarped_loss = self.elemwise_reprojection_loss(t_img, tPrime_img)
+                unwarped_loss = self._elemwise_reprojection_loss(t_img, tPrime_img)
                 reproj_loss = torch.cat([reproj_loss, unwarped_loss], dim=1).min(dim=1, keepdim=True)
             
             proj_loss_across_scales.append(reproj_loss)

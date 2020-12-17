@@ -36,15 +36,15 @@ def rotation_matrix(axisangles):
     icos = 1 - cos
     sin = torch.sin(theta)
 
-    R[:,0,0] = cos + a**2*icos
-    R[:,0,1] = a*b*icos - c*sin
-    R[:,0,2] = a*c*icos + b*sin
-    R[:,1,0] = a*b*icos + c*sin
-    R[:,1,1] = cos + b**2*icos
-    R[:,1,2] = b*c*icos - a*sin
-    R[:,2,0] = a*c*icos - b*sin
-    R[:,2,1] = b*c*icos + a*sin
-    R[:,2,2] = cos + c**2*icos
+    R[:,0,0] = torch.squeeze(cos + a**2*icos)
+    R[:,0,1] = torch.squeeze(a*b*icos - c*sin)
+    R[:,0,2] = torch.squeeze(a*c*icos + b*sin)
+    R[:,1,0] = torch.squeeze(a*b*icos + c*sin)
+    R[:,1,1] = torch.squeeze(cos + b**2*icos)
+    R[:,1,2] = torch.squeeze(b*c*icos - a*sin)
+    R[:,2,0] = torch.squeeze(a*c*icos - b*sin)
+    R[:,2,1] = torch.squeeze(b*c*icos + a*sin)
+    R[:,2,2] = torch.squeeze(cos + c**2*icos)
     R[:,3,3] = 1.0
     return R
 
@@ -52,7 +52,7 @@ def rotation_matrix(axisangles):
 # Based on course notes
 def translation_matrix(translation):
     bsize = translation.shape[0]
-    T = torch.zeros((bsize, 4, 4), device=translation.shape)
+    T = torch.zeros((bsize, 4, 4), device=translation.device)
 
     T[:,0,0] = 1.0
     T[:,1,1] = 1.0

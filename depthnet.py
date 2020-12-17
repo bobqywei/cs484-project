@@ -24,10 +24,10 @@ class DepthNet(nn.Module):
                 out_layers.append(nn.Sequential(nn.Conv2d(ch//2, 1, kernel_size=3, padding=1), nn.Sigmoid()))
         
         decoder_layers += [
-            nn.Conv2d(64, 32, kernel_size=2, padding=1),
-            nn.Conv2d(96, 32, kernel_size=2, padding=1),
-            nn.Conv2d(32, 16, kernel_size=2, padding=1),
-            nn.Conv2d(16, 16, kernel_size=2, padding=1)]
+            nn.Conv2d(64, 32, kernel_size=3, padding=1),
+            nn.Conv2d(96, 32, kernel_size=3, padding=1),
+            nn.Conv2d(32, 16, kernel_size=3, padding=1),
+            nn.Conv2d(16, 16, kernel_size=3, padding=1)]
         out_layers += [
             nn.Sequential(nn.Conv2d(32, 1, kernel_size=3, padding=1), nn.Sigmoid()),
             nn.Sequential(nn.Conv2d(16, 1, kernel_size=3, padding=1), nn.Sigmoid())]
@@ -52,12 +52,12 @@ class DepthNet(nn.Module):
             # upsample
             x = F.interpolate(x, scale_factor=2, mode='nearest')
             # skip connection
-            if i > 0:
-                x = torch.cat([x, enc_outputs[-i]], dim=1)
+            if i != 4:
+                x = torch.cat([x, enc_outputs[-(i+1)]], dim=1)
             x = self.convs[2*i+1](x)
             # output at different scales
             if i > 0:
-                outputs.append(self.out_convs[i](x))
+                outputs.append(self.out_convs[i-1](x))
 
         return outputs
 

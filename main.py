@@ -56,8 +56,6 @@ def main(config_path):
         scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=config['schedule'], gamma=0.1)
         
         for epoch in range(1, config['num_epochs']+1):
-            # step learning rate scheduler
-            scheduler.step()
             # train single epoch
             depthnet.train()
             posenet.train()
@@ -70,6 +68,9 @@ def main(config_path):
             posenet.eval()
             validate(epoch, depthnet, posenet, val_dataloader, tb_logger, config)
             
+            # step learning rate scheduler
+            scheduler.step()
+
 
 if __name__ == '__main__':
     args = sys.argv

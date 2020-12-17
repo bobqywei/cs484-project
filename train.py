@@ -10,7 +10,7 @@ def get_losses_over_frames(posenet, data, disparity_imgs, config):
     smooth_loss_all_frames = 0
 
     for tPrime_k in ['prev', 'next']:
-        img_pair = torch.concat(
+        img_pair = torch.cat(
             [
                 data['img_aug'] if tPrime_k == 'next' else data['prev_img_aug'],
                 data['next_img_aug'] if tPrime_k == 'next' else data['img_aug'] 
