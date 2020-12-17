@@ -11,10 +11,10 @@ max_depth: 100.0
 num_scales: 4
 use_mask: False
 min_proj: True
-smooth_weight: 1e-3
+smooth_weight: 0.001
 
 batch_size: 12
-lr: 1e-4
+lr: 0.0001
 num_epochs: 20
 schedule: [15]
 

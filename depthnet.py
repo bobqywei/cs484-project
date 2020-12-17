@@ -1,90 +1,63 @@
-
-from __future__ import absolute_import, division, print_function
-
-import numpy as np
-
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torchvision.models as models
-import torch.utils.model_zoo as model_zoo
-
-from collections import OrderedDict
-from layers import *
-
-
-class DepthDecoder(nn.Module):
-
-    def __init__(self, num_ch_enc, scales, num_output_channels, use_skips):
-
-        super(DepthDecoder, self).__init__()
-
-        self.num_output_channels = num_output_channels
-        self.use_skips = use_skips
-        self.upsample_mode = 'nearest'
-        self.scales = scales
-
-        self.num_ch_enc = num_ch_enc
-        self.num_ch_dec = np.array([16, 32, 64, 128, 256])
-
-        # decoder
-        self.convs = OrderedDict()
-        for i in range(4, -1, -1):
-            # upconv_0
-            num_ch_in = self.num_ch_enc[-1] if i == 4 else self.num_ch_dec[i + 1]
-            num_ch_out = self.num_ch_dec[i]
-            self.convs[("upconv", i, 0)] = ConvBlock(num_ch_in, num_ch_out)
-
-            # upconv_1
-            num_ch_in = self.num_ch_dec[i]
-            if self.use_skips and i > 0:
-                num_ch_in += self.num_ch_enc[i - 1]
-            num_ch_out = self.num_ch_dec[i]
-            self.convs[("upconv", i, 1)] = ConvBlock(num_ch_in, num_ch_out)
-
-        for s in self.scales:
-            self.convs[("dispconv", s)] = Conv3x3(self.num_ch_dec[s], self.num_output_channels)
-
-        self.decoder = nn.ModuleList(list(self.convs.values()))
-        self.sigmoid = nn.Sigmoid()
-
-    def forward(self, input_features):
-        self.outputs = {}
-
-        # decoder
-        x = input_features[-1]
-        for i in range(4, -1, -1):
-            x = self.convs[("upconv", i, 0)](x)
-            x = [upsample(x)]
-            if self.use_skips and i > 0:
-                x += [input_features[i - 1]]
-            x = torch.cat(x, 1)
-            x = self.convs[("upconv", i, 1)](x)
-            if i in self.scales:
-                self.outputs[("disp", i)] = self.sigmoid(self.convs[("dispconv", i)](x))
-
-        return self.outputs
 
 
 class DepthNet(nn.Module):
+    def __init__(self, config):
+        super(DepthNet, self).__init__()
+        self.config = config
 
-    def __init__(
-        self,
-        num_ch_enc=3,
-        scales=range(4),
-        num_output_channels=1,
-        use_skips=True
-    ):
+        self.encoder = models.resnet18(pretrained=True)
         
-        self.model = nn.Sequential(
-            models.resnet18(pretrained=True),
-            DepthDecoder(
-                num_ch_enc,
-                scales,
-                num_output_channels,
-                use_skips
-            )
-        )
-    
-    def forward(self, depth_image):
+        # channels in final output of resnet18 encoder
+        enc_out_ch = self.encoder.layer4[-1].conv2.out_channels
+        decoder_layers = []
+        out_layers = []
+        
+        for i in range(3):
+            ch = enc_out_ch // (2**i)
+            decoder_layers.append(nn.Conv2d(ch, ch//2, kernel_size=3, padding=1))
+            decoder_layers.append(nn.Conv2d(ch, ch//2, kernel_size=3, padding=1))
+            if i > 0:
+                out_layers.append(nn.Sequential(nn.Conv2d(ch//2, 1, kernel_size=3, padding=1), nn.Sigmoid()))
+        
+        decoder_layers += [
+            nn.Conv2d(64, 32, kernel_size=2, padding=1),
+            nn.Conv2d(96, 32, kernel_size=2, padding=1),
+            nn.Conv2d(32, 16, kernel_size=2, padding=1),
+            nn.Conv2d(16, 16, kernel_size=2, padding=1)]
+        out_layers += [
+            nn.Sequential(nn.Conv2d(32, 1, kernel_size=3, padding=1), nn.Sigmoid()),
+            nn.Sequential(nn.Conv2d(16, 1, kernel_size=3, padding=1), nn.Sigmoid())]
 
-        return self.model(depth_image)
+        self.convs = nn.ModuleList(decoder_layers)
+        self.out_convs = nn.ModuleList(out_layers)
+
+    # img: [B,3,H,W]
+    def forward(self, img):
+        enc_outputs = []
+        x = self.encoder.conv1(img)
+        x = self.encoder.bn1(x)
+        enc_outputs.append(self.encoder.relu(x))
+        enc_outputs.append(self.encoder.layer1(self.encoder.maxpool(enc_outputs[-1])))
+        enc_outputs.append(self.encoder.layer2(enc_outputs[-1]))
+        enc_outputs.append(self.encoder.layer3(enc_outputs[-1]))
+        x = self.encoder.layer4(enc_outputs[-1])
+
+        outputs = []
+        for i in range(5):
+            x = self.convs[2*i](x)
+            # upsample
+            x = F.interpolate(x, scale_factor=2, mode='nearest')
+            # skip connection
+            if i > 0:
+                x = torch.cat([x, enc_outputs[-i]], dim=1)
+            x = self.convs[2*i+1](x)
+            # output at different scales
+            if i > 0:
+                outputs.append(self.out_convs[i](x))
+
+        return outputs
+

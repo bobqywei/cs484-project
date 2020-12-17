@@ -8,6 +8,8 @@ from torch.utils.tensorboard import SummaryWriter
 from dataset import KITTIDatasetTrain
 from train import train_one_epoch, validate
 from loss import BaseLoss
+from posenet import PoseNet
+from depthnet import DepthNet
 
 
 def main(config_path):
@@ -16,7 +18,7 @@ def main(config_path):
 
     config['device'] = torch.device('cuda' if config['cuda'] else 'cpu')
 
-    depthnet = ...
+    depthnet = DepthNet(config).to(config['device'])
 
     if not config['eval']:
         ckpt_dir = os.path.join('checkpoints', config['exp_name'])
@@ -45,7 +47,7 @@ def main(config_path):
             pin_memory=True,
             drop_last=True)
 
-        posenet = ...
+        posenet = PoseNet(config).to(config['device'])
 
         config['Loss'] = BaseLoss(config)
 

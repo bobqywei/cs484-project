@@ -35,7 +35,8 @@ class KITTIDatasetTrain(Dataset):
         img_transform = transforms.Compose([
             transforms.Resize((self.config['img_hgt'], self.config['img_wid'])),
             transforms.RandomHorizontalFlip(p=1.0 if flip_p > 0.5 else 0.0),
-            transforms.ToTensor()
+            transforms.ToTensor(),
+            transforms.Normalize(mean=(0.45, 0.45, 0.45), std=(0.225, 0.225, 0.225)),
         ])
         img_aug_transform = transforms.Compose([
             transforms.Resize((self.config['img_hgt'], self.config['img_wid'])),
@@ -49,7 +50,8 @@ class KITTIDatasetTrain(Dataset):
                 )],
                 p = 1.0 if color_p > 0.5 else 0.0
             ),
-            transforms.ToTensor()
+            transforms.ToTensor(),
+            transforms.Normalize(mean=(0.45, 0.45, 0.45), std=(0.225, 0.225, 0.225)),
         ])
 
         imgs = [img_transform(x) for x in imgs]
