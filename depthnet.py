@@ -59,5 +59,6 @@ class DepthNet(nn.Module):
             if i > 0:
                 outputs.append(self.out_convs[i-1](x))
 
+        outputs.reverse()
         return outputs
 

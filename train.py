@@ -77,7 +77,7 @@ def train_one_epoch(
             smooth_loss_scalar = smooth_loss.item()
             loss_scalar = reproj_loss_scalar + smooth_loss_scalar
 
-            print('{}/{} - [{}]: reproj={:.4f}, smooth={:.4f}, total={:.4f}'.format(
+            print('{}/{} - [{}]: reproj={:.6f}, smooth={:.6f}, total={:.6f}'.format(
                 i, len(train_dataloader), epoch, reproj_loss_scalar, smooth_loss_scalar, loss_scalar))
             
             total_iter = (i-1)*bsize + epoch * len(train_dataloader.dataset)
@@ -105,7 +105,7 @@ def validate(epoch, depthnet, posenet, val_dataloader, tb_logger, config):
         total_loss = total_reproj_loss + total_smooth_loss
         
         # Logging
-        print('reproj={:.4f}, smooth={:.4f}, total={:.4f}'.format(total_reproj_loss, total_smooth_loss, total_loss))
+        print('reproj={:.6f}, smooth={:.6f}, total={:.6f}'.format(total_reproj_loss, total_smooth_loss, total_loss))
         tb_logger.add_scalar('val/total_loss', total_loss, epoch)
         tb_logger.add_scalar('val/reproj_loss', total_reproj_loss, epoch)
         tb_logger.add_scalar('val/smooth_loss', total_smooth_loss, epoch)

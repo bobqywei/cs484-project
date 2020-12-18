@@ -45,7 +45,7 @@ class BaseLoss(object):
 
         for i in range(self.config['num_scales']):
             depth = disparity_to_depth(
-                disparity_preds[self.config['num_scales']-1-i], self.config['min_depth'], self.config['max_depth'])
+                disparity_preds[i], self.config['min_depth'], self.config['max_depth'])
             # Upsample all depth maps to original [B,H,W]
             if i > 0:
                 depth = F.interpolate(depth, (self.H, self.W), mode="bilinear", align_corners=False)
@@ -81,7 +81,7 @@ class BaseLoss(object):
             # takes the minimum between reproj loss and unwarped loss at each pixel
             if self.config['use_mask']:
                 unwarped_loss = self._elemwise_reprojection_loss(t_img, tPrime_img)
-                reproj_loss = torch.cat([reproj_loss, unwarped_loss], dim=1).min(dim=1, keepdim=True)
+                reproj_loss, _ = torch.cat([reproj_loss, unwarped_loss], dim=1).min(dim=1, keepdim=True)
             
             proj_loss_across_scales.append(reproj_loss)
 
@@ -101,7 +101,7 @@ class BaseLoss(object):
 
         total_smooth_loss = 0
         for scale in range(self.config['num_scales']):
-            disp_img = disp_imgs[self.config['num_scales']-1-scale]
+            disp_img = disp_imgs[scale]
             if scale > 0:
                 disp_img = F.interpolate(
                     disp_img, (self.H, self.W), mode="bilinear", align_corners=False)
