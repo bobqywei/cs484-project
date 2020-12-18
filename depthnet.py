@@ -18,20 +18,23 @@ class DepthNet(nn.Module):
         
         for i in range(3):
             ch = enc_out_ch // (2**i)
+
             decoder_layers.append(
-                nn.Sequential(nn.Conv2d(ch, ch//2, kernel_size=3, padding=1), nn.ELU())
+                nn.Conv2d(ch, ch//2, kernel_size=3, padding=1)
             )
             decoder_layers.append(
-                nn.Sequential(nn.Conv2d(ch, ch//2, kernel_size=3, padding=1), nn.ELU())
+                nn.Conv2d(ch, ch//2, kernel_size=3, padding=1)
             )
+
             if i > 0:
                 out_layers.append(nn.Sequential(nn.Conv2d(ch//2, 1, kernel_size=3, padding=1), nn.Sigmoid()))
         
         decoder_layers += [
-            nn.Sequential(nn.Conv2d(64, 32, kernel_size=3, padding=1), nn.ELU()),
-            nn.Sequential(nn.Conv2d(96, 32, kernel_size=3, padding=1), nn.ELU()),
-            nn.Sequential(nn.Conv2d(32, 16, kernel_size=3, padding=1), nn.ELU()),
-            nn.Sequential(nn.Conv2d(16, 16, kernel_size=3, padding=1), nn.ELU())]
+            nn.Conv2d(64, 32, kernel_size=3, padding=1),
+            nn.Conv2d(96, 32, kernel_size=3, padding=1),
+            nn.Conv2d(32, 16, kernel_size=3, padding=1),
+            nn.Conv2d(16, 16, kernel_size=3, padding=1)]
+
         out_layers += [
             nn.Sequential(nn.Conv2d(32, 1, kernel_size=3, padding=1), nn.Sigmoid()),
             nn.Sequential(nn.Conv2d(16, 1, kernel_size=3, padding=1), nn.Sigmoid())]
