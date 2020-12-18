@@ -1,6 +1,7 @@
 import os
 import copy
 import random
+import glob
 import numpy as np
 import torch
 import torchvision.transforms as transforms
@@ -81,3 +82,35 @@ class KITTIDatasetTrain(Dataset):
 
     def __len__(self):
         return len(self.lines)
+
+
+class KITTIDatasetEval(Dataset):
+    def __init__(self, config):
+        super(KITTIDatasetEval, self).__init__()
+        self.config = config
+        self.root_path = 'data/depth_selection/val_selection_cropped'
+
+        gt_paths = glob.glob('data/depth_selection/val_selection_cropped/groundtruth_depth/*.png')
+        self.gt_depth_paths = [x.split('/')[-1].split('.')[0] for x in gt_paths]
+        self.img_paths = [x.replace('groundtruth_depth', 'image') for x in self.gt_depth_paths]
+
+        self.img_transform = transforms.Compose([
+            transforms.Resize((self.config['img_hgt'], self.config['img_wid'])),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=(0.45, 0.45, 0.45), std=(0.225, 0.225, 0.225)),
+        ])
+        self.depth_transform = transforms.Compose([
+            transforms.Resize((self.config['img_hgt'], self.config['img_wid'])),
+            transforms.ToTensor(),
+        ])
+        
+    def __len__(self):
+        return len(self.img_paths)
+
+    def __getitem__(self, index):
+        img_path = os.path.join(self.root_path, 'image', '{}.png'.format(self.img_paths[index]))
+        img = self.img_transform(Image.open(img_path))
+        gt_path = os.path.join(self.root_path, 'groundtruth_depth', '{}.png'.format(self.gt_depth_paths[index]))
+        gt_depth = self.depth_transform(Image.open(gt_path))
+
+        return {'img': img, 'gt_depth': gt_depth}
